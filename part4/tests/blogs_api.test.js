@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const { manyBlogs } = require("./helpers");
 
 const api = supertest(app);
@@ -55,6 +56,20 @@ describe("Deleting a single blog", () => {
 });
 
 describe("Adding a new blog", () => {
+  //Create new user and login
+  let auth;
+  beforeAll(async () => {
+    await User.deleteMany({});
+    const newUser = {
+      username: "testuser",
+      name: "Test User",
+      password: "1234",
+    };
+    await api.post("/api/users").send(newUser);
+    const login = await api.post("/api/login").send(newUser);
+    auth = `Bearer ${login.body.token}`;
+  });
+
   test("Succeeds with valid data", async () => {
     const prevBlogs = await api.get("/api/blogs");
 
@@ -65,7 +80,7 @@ describe("Adding a new blog", () => {
       likes: 9,
     };
 
-    const sentBlog = await api.post("/api/blogs").send(newBlog);
+    const sentBlog = await api.post("/api/blogs").send(newBlog).set("authorization", auth);
     expect(sentBlog.body.title).toContain("I hope I'm a valid blog");
 
     const nextBlogs = await api.get("/api/blogs");
@@ -79,7 +94,7 @@ describe("Adding a new blog", () => {
       url: "http://verycoolblog.com",
     };
 
-    const sentBlog = await api.post("/api/blogs").send(newBlog);
+    const sentBlog = await api.post("/api/blogs").send(newBlog).set("authorization", auth);
 
     expect(sentBlog.body.likes).toBe(0);
   });
