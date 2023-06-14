@@ -2,85 +2,122 @@ const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
 const Blog = require("../models/blog");
-const { manyBlogs } = require("./test_data");
+const { manyBlogs } = require("./helpers");
 
 const api = supertest(app);
 
 beforeEach(async () => {
   await Blog.deleteMany({});
-
   const newBlogs = manyBlogs.map((blog) => new Blog(blog));
-
   const promises = newBlogs.map((blog) => blog.save());
-
   await Promise.all(promises);
 });
 
-test("api: blog list returned as json", async () => {
-  await api
-    .get("/api/blogs")
-    .expect(200)
-    .expect("Content-Type", /application\/json/);
-});
+describe("After initializing some blogs", () => {
+  test("Blogs are returned as json", async () => {
+    await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+  });
 
-test("api: all blogs are returned", async () => {
-  const response = await api.get("/api/blogs");
+  test("All blogs are returned", async () => {
+    const response = await api.get("/api/blogs");
+    expect(response.body).toHaveLength(manyBlogs.length);
+  });
 
-  expect(response.body).toHaveLength(manyBlogs.length);
-});
-
-test("api: all blogs have a 'id' key/value", async () => {
-  const response = await api.get("/api/blogs");
-
-  response.body.forEach((blog) => {
-    expect(blog.id).toBeDefined();
+  test("All blogs have a 'id' key/value", async () => {
+    const response = await api.get("/api/blogs");
+    response.body.forEach((blog) => {
+      expect(blog.id).toBeDefined();
+    });
   });
 });
 
-test("api: a new blog can be added", async () => {
-  const prevBlogs = await api.get("/api/blogs");
+describe("Deleting a single blog", () => {
+  test("Succeeds with 204 status if the id is valid", async () => {
+    const prevBlogs = await api.get("/api/blogs");
+    const blogToDelete = prevBlogs.body[0];
 
-  const newBlog = {
-    title: "I hope I'm a valid blog",
-    author: "Pucky",
-    url: "http://verycoolblog.com",
-    likes: 9,
-  };
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
 
-  const sentBlog = await api.post("/api/blogs").send(newBlog);
-  expect(sentBlog.body.title).toContain("I hope I'm a valid blog");
+    const nextBlogs = await api.get("/api/blogs");
+    expect(nextBlogs.body).toHaveLength(manyBlogs.length - 1);
 
-  const nextBlogs = await api.get("/api/blogs");
-  expect(nextBlogs.body).toHaveLength(prevBlogs.body.length + 1);
+    const titles = nextBlogs.body.map((b) => b.title);
+
+    expect(titles).not.toContain(blogToDelete.title);
+  });
+
+  test("Fails with 400 status if id is invalid", async () => {
+    await api.delete("/api/blogs/thisisabadidea").expect(400);
+  });
 });
 
-test("api: sent blog without likes property is initialized to 0 likes", async () => {
-  const newBlog = {
-    title: "Please like this blog",
-    author: "Pucky",
-    url: "http://verycoolblog.com",
-  };
+describe("Adding a new blog", () => {
+  test("Succeeds with valid data", async () => {
+    const prevBlogs = await api.get("/api/blogs");
 
-  const sentBlog = await api.post("/api/blogs").send(newBlog);
+    const newBlog = {
+      title: "I hope I'm a valid blog",
+      author: "Pucky",
+      url: "http://verycoolblog.com",
+      likes: 9,
+    };
 
-  expect(sentBlog.body.likes).toBe(0);
+    const sentBlog = await api.post("/api/blogs").send(newBlog);
+    expect(sentBlog.body.title).toContain("I hope I'm a valid blog");
+
+    const nextBlogs = await api.get("/api/blogs");
+    expect(nextBlogs.body).toHaveLength(prevBlogs.body.length + 1);
+  });
+
+  test("Initializes to 0 likes if that property is missing", async () => {
+    const newBlog = {
+      title: "Please like this blog",
+      author: "Pucky",
+      url: "http://verycoolblog.com",
+    };
+
+    const sentBlog = await api.post("/api/blogs").send(newBlog);
+
+    expect(sentBlog.body.likes).toBe(0);
+  });
+
+  test("Fails with 400 status if contents are missing", async () => {
+    const firstBlog = {
+      author: "Pucky",
+      url: "http://verycoolblog.com",
+      likes: 42,
+    };
+    const secondBlog = {
+      author: "Pucky",
+      title: "I forgot the url",
+      likes: 7,
+    };
+    const thirdBlog = {};
+
+    await api.post("/api/blogs").send(firstBlog).expect(400);
+    await api.post("/api/blogs").send(secondBlog).expect(400);
+    await api.post("/api/blogs").send(thirdBlog).expect(400);
+  });
 });
 
-test("api: sent blog with missing title and/or url fails with a 400 status", async () => {
-  const firstBlog = {
-    author: "Pucky",
-    url: "http://verycoolblog.com",
-    likes: 42,
-  };
+describe("Updating an existing blog", () => {
+  test("Succeeds with 200 status if the id is valid", async () => {
+    const prevBlogs = await api.get("/api/blogs");
+    const blogToUpdate = prevBlogs.body[0];
+    blogToUpdate.title = "Important update!!";
 
-  const secondBlog = {
-    author: "Pucky",
-    title: "I forgot the url",
-    likes: 7,
-  };
+    await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate).expect(200);
 
-  await api.post("/api/blogs").send(firstBlog).expect(400);
-  await api.post("/api/blogs").send(secondBlog).expect(400);
+    const nextBlogs = await api.get("/api/blogs");
+    expect(nextBlogs.body[0].title).toBe("Important update!!");
+  });
+
+  test("Fails with 400 status if id is invalid", async () => {
+    await api.put("/api/blogs/thisisabadidea").expect(400);
+  });
 });
 
 afterAll(async () => {

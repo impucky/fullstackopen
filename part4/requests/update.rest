@@ -1,0 +1,9 @@
+PUT http://localhost:3001/api/blogs/qweqeqwe
+content-type: application/json
+
+{
+    "title": "Very up to date",
+    "author": "Jane Doe",
+    "url": "https://verycoolblog.com",
+    "likes": 999
+}
