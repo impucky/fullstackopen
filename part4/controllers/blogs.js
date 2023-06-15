@@ -35,6 +35,7 @@ blogsRouter.post("/", tokenExtractor, userExtractor, async (request, response) =
   user.blogs = user.blogs.concat(newBlog._id);
   await user.save();
   const savedBlog = await newBlog.save();
+  savedBlog.user = request.user;
   response.status(201).json(savedBlog);
 });
 
