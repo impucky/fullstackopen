@@ -19,7 +19,6 @@ body {
 }
 
 h1, h2 {
-  margin: 0.5rem 0;
   padding: 1rem;
   width: 100%;
 }
@@ -90,7 +89,7 @@ input:focus {
 .button {
   cursor: pointer;
   padding: 0 0.5rem;
-  margin: 0 0.5rem;
+  margin: 0 0.5rem 0 0;
   height: 2rem;
   color: #303446;
   font-weight: bold;

@@ -18,7 +18,7 @@ const App = () => {
   });
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    blogService.getAll().then((blogs) => setBlogs(blogs.sort((a, b) => a.likes < b.likes)));
   }, []);
 
   useEffect(() => {
@@ -37,9 +37,26 @@ const App = () => {
     }, 3000);
   };
 
-  const updateBlogs = (createdBlog) => {
+  const updateBlogsAfterNew = (createdBlog) => {
     setBlogs(blogs.concat(createdBlog));
     showMessage(`Created blog "${createdBlog.title}"`, "success");
+  };
+
+  const updateBlogsAfterDelete = (id) => {
+    const updatedBlogs = [...blogs];
+    const deletedIndex = updatedBlogs.findIndex((b) => b.id === id);
+    updatedBlogs.splice(deletedIndex, 1);
+    setBlogs(updatedBlogs);
+  };
+
+  const updateBlogsAfterLike = (id) => {
+    const updatedBlogs = blogs
+      .map((blog) => {
+        if (blog.id === id) return { ...blog, likes: blog.likes + 1 };
+        else return blog;
+      })
+      .sort((a, b) => a.likes < b.likes);
+    setBlogs(updatedBlogs);
   };
 
   return (
@@ -47,9 +64,17 @@ const App = () => {
       <Message {...message} />
       <UserPanel setUser={setUser} showMessage={showMessage} user={user} />
       <main>
-        {user && <NewBlogForm updateBlogs={updateBlogs} />}
+        {user && <NewBlogForm updateBlogs={updateBlogsAfterNew} />}
         <h1>Blogs</h1>
-        {user && blogs.map((blog) => <Blog key={blog.id} blog={blog} />)}
+        {user &&
+          blogs.map((blog, i) => (
+            <Blog
+              key={blog.id}
+              blog={blog}
+              updateLike={updateBlogsAfterLike}
+              updateDelete={updateBlogsAfterDelete}
+            />
+          ))}
       </main>
     </>
   );
