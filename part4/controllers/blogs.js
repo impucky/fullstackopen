@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const Blog = require("../models/blog");
 const User = require("../models/user");
 
+const { tokenExtractor, userExtractor } = require("../utils/middleware");
+
 blogsRouter.get("/", async (request, response) => {
   const allBlogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
 
@@ -18,13 +20,8 @@ blogsRouter.get("/:id", async (request, response) => {
   response.json(queriedBlog);
 });
 
-blogsRouter.post("/", async (request, response) => {
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: "Invalid token" });
-  }
-
-  const user = await User.findById(decodedToken.id);
+blogsRouter.post("/", tokenExtractor, userExtractor, async (request, response) => {
+  const user = request.user;
 
   const newBlog = new Blog(request.body);
   newBlog.user = user._id;
@@ -49,7 +46,17 @@ blogsRouter.put("/:id", async (request, response) => {
   response.status(200).json(updatedBlog);
 });
 
-blogsRouter.delete("/:id", async (request, response) => {
+blogsRouter.delete("/:id", tokenExtractor, userExtractor, async (request, response) => {
+  const user = request.user;
+  const blogToDelete = await Blog.findById(request.params.id);
+
+  // workaround for test data having no assigned user
+  if (!blogToDelete.user) return response.status(401).end();
+
+  if (blogToDelete.user.toString() !== user._id.toString()) {
+    return response.status(401).json({ error: "User doesn't own this entry" });
+  }
+
   const deletedBlog = await Blog.findByIdAndRemove(request.params.id);
 
   if (!deletedBlog) return response.status(400).end();
