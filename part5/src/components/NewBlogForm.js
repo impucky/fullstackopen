@@ -25,15 +25,33 @@ const NewBlogForm = ({ handleCreate }) => {
       <form onSubmit={handleSubmit} className="addblog">
         <div>
           <p>Title</p>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input
+            id="newblog-title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
         <div>
           <p>Author</p>
-          <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)} required />
+          <input
+            id="newblog-author"
+            type="text"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            required
+          />
         </div>
         <div>
           <p>URL</p>
-          <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          <input
+            id="newblog-url"
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+          />
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button onClick={toggleForm} className="button red">
