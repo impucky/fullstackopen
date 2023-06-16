@@ -23,5 +23,4 @@ const like = async (id, likes) => {
   await axios.put(`${baseUrl}/${id}`, { likes: likes + 1 }, config);
 };
 
-// eslint-disable-next-line import/no-anonymous-default-export
 export default { getAll, createNew, remove, like };

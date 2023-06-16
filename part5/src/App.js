@@ -37,22 +37,27 @@ const App = () => {
     }, 3000);
   };
 
-  const updateBlogsAfterNew = (createdBlog) => {
+  const handleCreate = async (blog) => {
+    const createdBlog = await blogService.createNew(blog);
     setBlogs(blogs.concat(createdBlog));
     showMessage(`Created blog "${createdBlog.title}"`, "success");
   };
 
-  const updateBlogsAfterDelete = (id) => {
-    const updatedBlogs = [...blogs];
-    const deletedIndex = updatedBlogs.findIndex((b) => b.id === id);
-    updatedBlogs.splice(deletedIndex, 1);
-    setBlogs(updatedBlogs);
+  const handleDelete = async (id, title) => {
+    if (window.confirm(`Delete blog "${title}" ?`)) {
+      await blogService.remove(id);
+      const updatedBlogs = [...blogs];
+      const deletedIndex = updatedBlogs.findIndex((blog) => blog.id === id);
+      updatedBlogs.splice(deletedIndex, 1);
+      setBlogs(updatedBlogs);
+    } else return;
   };
 
-  const updateBlogsAfterLike = (id) => {
+  const handleLike = async (id, likes) => {
+    await blogService.like(id, likes);
     const updatedBlogs = blogs
       .map((blog) => {
-        if (blog.id === id) return { ...blog, likes: blog.likes + 1 };
+        if (blog.id === id) return { ...blog, likes: likes + 1 };
         else return blog;
       })
       .sort((a, b) => a.likes < b.likes);
@@ -64,16 +69,11 @@ const App = () => {
       <Message {...message} />
       <UserPanel setUser={setUser} showMessage={showMessage} user={user} />
       <main>
-        {user && <NewBlogForm updateBlogs={updateBlogsAfterNew} />}
+        {user && <NewBlogForm handleCreate={handleCreate} />}
         <h1>Blogs</h1>
         {user &&
-          blogs.map((blog, i) => (
-            <Blog
-              key={blog.id}
-              blog={blog}
-              updateLike={updateBlogsAfterLike}
-              updateDelete={updateBlogsAfterDelete}
-            />
+          blogs.map((blog) => (
+            <Blog key={blog.id} blog={blog} handleLike={handleLike} handleDelete={handleDelete} />
           ))}
       </main>
     </>

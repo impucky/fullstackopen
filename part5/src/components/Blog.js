@@ -1,20 +1,7 @@
 import { useState } from "react";
-import blogService from "../services/blogs";
 
-const Blog = ({ blog, updateLike, updateDelete }) => {
+const Blog = ({ blog, handleLike, handleDelete }) => {
   const [expanded, setExpanded] = useState(false);
-
-  const handleLike = async () => {
-    await blogService.like(blog.id, blog.likes);
-    updateLike(blog.id);
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm(`Delete blog "${blog.title}" ?`)) {
-      await blogService.remove(blog.id);
-      updateDelete(blog.id);
-    }
-  };
 
   return (
     <div className="blog">
@@ -30,18 +17,18 @@ const Blog = ({ blog, updateLike, updateDelete }) => {
         </button>
       </header>
       {expanded && (
-        <div>
+        <div className="blog-details">
           <p>
             <a href="#">{blog.url}</a>
           </p>
           <p>
             Likes: {blog.likes}{" "}
-            <button onClick={handleLike} className="button green">
+            <button onClick={() => handleLike(blog.id, blog.likes)} className="button green">
               +
             </button>
           </p>
           <p>Posted by: {blog.user.name}</p>
-          <button onClick={handleDelete} className="button red">
+          <button onClick={() => handleDelete(blog.id, blog.title)} className="button red">
             Delete
           </button>
         </div>

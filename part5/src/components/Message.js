@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const Message = ({ content, type }) => {
   return (
     content.length > 0 && (
@@ -6,6 +8,11 @@ const Message = ({ content, type }) => {
       </div>
     )
   );
+};
+
+Message.propTypes = {
+  content: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
 };
 
 export default Message;

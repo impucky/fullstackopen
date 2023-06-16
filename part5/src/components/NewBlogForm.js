@@ -1,17 +1,15 @@
 import { useState } from "react";
-import blogService from "../services/blogs";
 
-const NewBlogForm = ({ updateBlogs }) => {
+const NewBlogForm = ({ handleCreate }) => {
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
 
-  const handleCreateBlog = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    handleCreate({ title, author, url });
     toggleForm("");
-    const createdBlog = await blogService.createNew({ title, author, url });
-    updateBlogs(createdBlog);
   };
 
   const toggleForm = () => {
@@ -24,7 +22,7 @@ const NewBlogForm = ({ updateBlogs }) => {
   return visible ? (
     <>
       <h2>New blog</h2>
-      <form onSubmit={handleCreateBlog} className="addblog">
+      <form onSubmit={handleSubmit} className="addblog">
         <div>
           <p>Title</p>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />

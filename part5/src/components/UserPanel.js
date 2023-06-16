@@ -16,7 +16,9 @@ const UserPanel = ({ setUser, showMessage, user }) => {
       setPassword("");
       showMessage("Successfully logged in", "success");
     } catch (err) {
-      showMessage("Invalid username or password", "error");
+      if (err.response.status === 401) {
+        showMessage("Invalid username or password", "error");
+      } else showMessage("Server error", "error");
     }
   };
 

@@ -141,13 +141,15 @@ input:focus {
 
 .message {
   position: absolute;
-  top: 2rem;
-  right: 2rem;
+  bottom: 1rem;
+  right: 1rem;
   font-size: 1.1rem;
   color: #303446;
   padding: 1rem;
   border-radius: 1rem;
   transition: all 0.5s;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .message.success {
