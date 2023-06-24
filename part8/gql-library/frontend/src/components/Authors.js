@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { ALL_AUTHORS, UPDATE_YEAR } from "../queries";
 
-const Authors = () => {
+const Authors = ({ token }) => {
   const authors = useQuery(ALL_AUTHORS);
   const [authorToUpdate, setAuthorToUpdate] = useState("");
 
@@ -23,7 +23,10 @@ const Authors = () => {
           {authors.data.allAuthors.map((a) => (
             <tr key={a.name}>
               <td>{a.name}</td>
-              <td>{a.born || <button onClick={() => setAuthorToUpdate(a.name)}>SET</button>}</td>
+              <td>
+                {a.born ||
+                  (token && <button onClick={() => setAuthorToUpdate(a.name)}>SET</button>)}
+              </td>
               <td>{a.bookCount}</td>
             </tr>
           ))}

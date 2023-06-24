@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 
 import { ADD_BOOK, ALL_BOOKS } from "../queries";
 
-const NewBook = (props) => {
+const NewBook = ({ token }) => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [published, setPublished] = useState("");
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!token) navigate("/");
+  }, [token]);
 
   const [addBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }],
