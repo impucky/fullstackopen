@@ -1,24 +1,25 @@
 import express from "express";
-import { Patient, NonSensitivePatientData } from "../types";
-import patientData from "../../data/patients";
+import patientService from "../services/patientService";
+import toNewPatient from "../utils";
+
 const router = express.Router();
 
-const patients: Patient[] = patientData;
-
-//const getPatients = (): Patient[] => patients;
-
-const getNonSensitivePatientData = (): NonSensitivePatientData[] => {
-  return patients.map(({ id, name, dateOfBirth, gender, occupation }) => ({
-    id,
-    name,
-    dateOfBirth,
-    gender,
-    occupation,
-  }));
-};
-
 router.get("/", (_req, res) => {
-  res.status(200).json(getNonSensitivePatientData());
+  res.status(200).json(patientService.getNonSensitivePatients());
+});
+
+router.post("/", (req, res) => {
+  try {
+    const newPatient = toNewPatient(req.body);
+    const addedPatient = patientService.addPatient(newPatient);
+    res.json(addedPatient);
+  } catch (error: unknown) {
+    let errorMessage = "Something went wrong.";
+    if (error instanceof Error) {
+      errorMessage += " Error: " + error.message;
+    }
+    res.status(400).send(errorMessage);
+  }
 });
 
 export default router;

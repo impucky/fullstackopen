@@ -7,6 +7,7 @@ import patientsRouter from "./routes/patients";
 const app = express();
 
 app.use((cors as (options: cors.CorsOptions) => express.RequestHandler)({}));
+app.use(express.json());
 
 const PORT = 3001;
 
