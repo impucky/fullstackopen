@@ -7,6 +7,8 @@ import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 
 import EntryDetails from "./EntryDetails";
+import AddEntryForm from "../AddEntryForm";
+
 import { Patient, Entry, Diagnosis } from "../../types";
 import patientService from "../../services/patients";
 import diagnosesService from "../../services/diagnoses";
@@ -69,6 +71,9 @@ const PatientPage = () => {
       <Typography variant="body1">
         <b>Occupation:</b> {patient.occupation}
       </Typography>
+      <Box mt={3}>
+        <AddEntryForm diagnoses={diagnoses} patient={patient} setPatient={setPatient} />
+      </Box>
       {patient.entries.length > 0 && (
         <Box mt={3}>
           <Typography variant="h6">Entries</Typography>

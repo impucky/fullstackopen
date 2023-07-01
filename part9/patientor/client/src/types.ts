@@ -52,11 +52,21 @@ interface HealthCheckEntry extends BaseEntry {
   healthCheckRating: HealthCheckRating;
 }
 
-enum HealthCheckRating {
-  "Healthy" = 0,
-  "LowRisk" = 1,
-  "HighRisk" = 2,
-  "CriticalRisk" = 3,
+export enum HealthCheckRating {
+  Healthy = 0,
+  LowRisk = 1,
+  HighRisk = 2,
+  CriticalRisk = 3,
+}
+
+export enum EntryType {
+  OccupationalHealthcare = "OccupationalHealthcare",
+  HealthCheck = "HealthCheck",
+  Hospital = "Hospital",
 }
 
 export type Entry = HospitalEntry | OccupationalHealthcareEntry | HealthCheckEntry;
+
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never;
+
+export type NewEntry = UnionOmit<Entry, "id">;
